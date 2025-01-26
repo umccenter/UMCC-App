@@ -1,0 +1,92 @@
+#buttonback {
+  background-color: #6c757d; /* Greyish color */
+  color: white;
+  font-size: 14px; /* Smaller font size */
+  font-weight: bold;
+  padding: 8px 16px; /* Reduced padding */
+  border: none;
+  border-radius: 6px; /* Slightly rounded corners */
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth transitions */
+}
+
+#buttonback:hover {
+  background-color: #5a6268; /* Slightly darker grey */
+  box-shadow: 0 5px 7px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+  transform: scale(1.03); /* Slight enlargement */
+}
+
+#buttonback:active {
+  background-color: #495057; /* Even darker grey for tap effect */
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2); /* Reduced shadow on tap */
+  transform: scale(0.97); /* Slight shrink for tap feedback */
+}
+
+
+//next button
+
+/* Base styling shared by both enabled and disabled states */
+#buttonsave {
+  color: white;
+  font-size: 16px;       /* Readable and modern */
+  font-weight: bold;
+  padding: 12px 24px;    /* Spacious for a soft appearance */
+  border: none;
+  border-radius: 20px;   /* Fully rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  cursor: pointer;
+  /* Let’s keep transitions here so they take effect when :enabled */
+  transition: background-color 0.3s ease, 
+              box-shadow 0.3s ease, 
+              transform 0.2s ease; /* Smooth effects */
+}
+
+/* Modern look only when enabled */
+#buttonsave:enabled {
+  background-color: #007bff; /* Default modern blue */
+}
+
+/* Hover effect (only for enabled) */
+#buttonsave:enabled:hover {
+  background-color: #339af0; /* Brighter blue */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
+  transform: translateY(-2px); /* Lift effect */
+}
+
+/* Active (click) effect (only for enabled) */
+#buttonsave:enabled:active {
+  background-color: #0056b3; /* Darker blue */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Reduced shadow */
+  transform: scale(0.98); /* Slight shrink */
+}
+
+/* Disabled state */
+#buttonsave:disabled {
+  background-color: #007bff; /* Same blue as enabled for consistency */
+  color: white;              /* Keep text white */
+  opacity: 0.6;             /* Slightly faded */
+  cursor: not-allowed;      /* Show disabled cursor */
+  transform: none;          /* No animation on click */
+  transition: none;         /* Remove hover/click transitions */
+  /* Retain the box-shadow and border-radius for consistent shape */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  border: none;
+}
+
+
+
+
+
+//Textbox
+
+
+
+var textarea = document.getElementById("Rigthtoleftbox");
+if (textarea) {
+    textarea.style.direction = "rtl";
+    textarea.style.unicodeBidi = "bidi-override";
+    textarea.style.textAlign = "right";
+}
+
