@@ -1,179 +1,137 @@
-<!DOCTYPE html>
-<html lang="en">
+﻿<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Enhanced Text Saver App (Modular Firebase)</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      overflow: hidden;
-      color: #333;
-    }
-    .container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
-    .draggable {
-      position: absolute;
-      cursor: grab;
-      z-index: 9999;
-    }
-    .output {
-      font-size: 1.5rem;
-      text-align: center;
-      color: #333;
-      background: rgba(255, 255, 255, 0.8);
-      padding: 10px;
-      border-radius: 5px;
-      font-family: 'Amiri', serif;
-    }
-    textarea {
-      width: 300px;
-      height: 100px;
-      padding: 10px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      direction: rtl;
-      font-family: 'Amiri', serif;
-      display: none;
-      z-index: 9999;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      background-color: #007BFF;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s, opacity 0.3s;
-      z-index: 9999;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    #editButton {
-      opacity: 0.5;
-    }
-    #editButton:hover {
-      opacity: 1;
-    }
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet"/>
-</head>
-<body>
-  <div class="container">
-    <div id="displayText" class="output draggable" style="top: 50px; left: 50px;">Your text will appear here...</div>
-    <textarea id="textInput" class="draggable" style="top: 200px; left: 50px;">Type your text here...</textarea>
-    <button id="editButton" class="draggable" style="top: 350px; left: 50px;">Edit</button>
-    <button id="saveButton" class="draggable" style="top: 400px; left: 50px; display: none;">Save</button>
-    <button id="cancelButton" class="draggable" style="top: 450px; left: 50px; display: none;">Cancel</button>
-  </div>
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js';
-    import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.17.2/firebase-analytics.js';
-    import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js';
-    const firebaseConfig = {
-      apiKey: "AIzaSyBQA4m35hcdreM4VpooyagxQAfYynXFClo",
-      authDomain: "hadeeth-26b88.firebaseapp.com",
-      databaseURL: "https://hadeeth-26b88-default-rtdb.firebaseio.com",
-      projectId: "hadeeth-26b88",
-      storageBucket: "hadeeth-26b88.firebasestorage.app",
-      messagingSenderId: "114896646614",
-      appId: "1:114896646614:web:340ec731675b4121a5b477",
-      measurementId: "G-4MH2VPKD5D"
-    };
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const database = getDatabase(app);
-    function makeDraggable() {
-      const elements = document.querySelectorAll('.draggable');
-      elements.forEach(el => {
-        el.addEventListener('mousedown', function(e) {
-          const offsetX = e.clientX - el.getBoundingClientRect().left;
-          const offsetY = e.clientY - el.getBoundingClientRect().top;
-          function mouseMoveHandler(e) {
-            el.style.left = `${e.clientX - offsetX}px`;
-            el.style.top = `${e.clientY - offsetY}px`;
-          }
-          function mouseUpHandler() {
-            document.removeEventListener('mousemove', mouseMoveHandler);
-            document.removeEventListener('mouseup', mouseUpHandler);
-          }
-          document.addEventListener('mousemove', mouseMoveHandler);
-          document.addEventListener('mouseup', mouseUpHandler);
-        });
-      });
-    }
-    function toggleEdit(e) {
-      const textInput = document.getElementById('textInput');
-      const saveButton = document.getElementById('saveButton');
-      const cancelButton = document.getElementById('cancelButton');
-      const editButton = document.getElementById('editButton');
-      if (e) {
-        editButton.style.display = 'none';
-        textInput.style.display = 'block';
-        saveButton.style.display = 'block';
-        cancelButton.style.display = 'block';
-      } else {
-        textInput.style.display = 'none';
-        saveButton.style.display = 'none';
-        cancelButton.style.display = 'none';
-        editButton.style.display = 'block';
-      }
-    }
-    window.toggleEdit = toggleEdit;
-    async function saveText() {
-      const textInput = document.getElementById('textInput');
-      const displayText = document.getElementById('displayText');
-      const text = textInput.value.trim();
-      if (!text) {
-        alert('Please enter some text before saving!');
-        return;
-      }
-      try {
-        await set(ref(database, 'Hadeeth'), text);
-        alert('Text saved successfully!');
-        const snapshot = await get(ref(database, 'Hadeeth'));
-        displayText.textContent = snapshot.val();
-        toggleEdit(false);
-      } catch (error) {
-        alert('Error saving text: ' + error.message);
-      }
-    }
-    window.saveText = saveText;
-    async function cancelEdit() {
-      const displayText = document.getElementById('displayText');
-      const textInput = document.getElementById('textInput');
-      const snapshot = await get(ref(database, 'Hadeeth'));
-      const text = snapshot.val() || 'Your text will appear here...';
-      displayText.textContent = text;
-      textInput.value = text;
-      toggleEdit(false);
-    }
-    window.cancelEdit = cancelEdit;
-    window.addEventListener('DOMContentLoaded', async () => {
-      const displayText = document.getElementById('displayText');
-      const textInput = document.getElementById('textInput');
-      const snapshot = await get(ref(database, 'Hadeeth'));
-      const text = snapshot.val() || 'Your text will appear here...';
-      displayText.textContent = text;
-      textInput.value = text;
-      makeDraggable();
-      document.getElementById('editButton').addEventListener('click', () => toggleEdit(true));
-      document.getElementById('saveButton').addEventListener('click', saveText);
-      document.getElementById('cancelButton').addEventListener('click', cancelEdit);
-    });
-  </script>
-</body>
-</html>
+    <meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<title>New project</title>
+	
+	<!-- Standardised web app manifest -->
+	<link rel="manifest" href="appmanifest.json" />
+	
+	<!-- Allow fullscreen mode on iOS devices. (These are Apple specific meta tags.) -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, minimal-ui" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+	<link rel="apple-touch-icon" sizes="256x256" href="icon-256.png" />
+	<meta name="HandheldFriendly" content="true" />
+	
+	<!-- Chrome for Android web app tags -->
+	<meta name="mobile-web-app-capable" content="yes" />
+	<link rel="shortcut icon" sizes="256x256" href="icon-256.png" />
+
+    <!-- All margins and padding must be zero for the canvas to fill the screen. -->
+	<style type="text/css">
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		html, body {
+			background: #000;
+			color: #fff;
+			overflow: hidden;
+			touch-action: none;
+			-ms-touch-action: none;
+		}
+		canvas {
+			touch-action-delay: none;
+			touch-action: none;
+			-ms-touch-action: none;
+		}
+    </style>
+	
+
+</head> 
+ 
+<body> 
+	<div id="fb-root"></div>
+	
+	<script>
+	// Issue a warning if trying to preview an exported project on disk.
+	(function(){
+		// Check for running exported on file protocol
+		if (window.location.protocol.substr(0, 4) === "file")
+		{
+			alert("Exported games won't work until you upload them. (When running on the file:/// protocol, browsers block many features from working for security reasons.)");
+		}
+	})();
+	</script>
+	
+	<!-- The canvas must be inside a div called c2canvasdiv -->
+	<div id="c2canvasdiv">
+	
+		<!-- The canvas the project will render to.  If you change its ID, don't forget to change the
+		ID the runtime looks for in the jQuery events above (ready() and cr_sizeCanvas()). -->
+		<canvas id="c2canvas" width="3840" height="2160">
+			<!-- This text is displayed if the visitor's browser does not support HTML5.
+			You can change it, but it is a good idea to link to a description of a browser
+			and provide some links to download some popular HTML5-compatible browsers. -->
+			<h1>Your browser does not appear to support HTML5.  Try upgrading your browser to the latest version.  <a href="http://www.whatbrowser.org">What is a browser?</a>
+			<br/><br/><a href="http://www.microsoft.com/windows/internet-explorer/default.aspx">Microsoft Internet Explorer</a><br/>
+			<a href="http://www.mozilla.com/firefox/">Mozilla Firefox</a><br/>
+			<a href="http://www.google.com/chrome/">Google Chrome</a><br/>
+			<a href="http://www.apple.com/safari/download/">Apple Safari</a></h1>
+		</canvas>
+		
+	</div>
+	
+	<!-- Pages load faster with scripts at the bottom -->
+	
+	<!-- Construct 2 exported games require jQuery. -->
+	<script src="jquery-3.4.1.min.js"></script>
+
+	<script src="firebase.js"></script>
+
+	
+    <!-- The runtime script.  You can rename it, but don't forget to rename the reference here as well.
+    This file will have been minified and obfuscated if you enabled "Minify script" during export. -->
+	<script src="c2runtime.js"></script>
+
+    <script>
+		// Start the Construct 2 project running on window load.
+		jQuery(document).ready(function ()
+		{			
+			// Create new runtime using the c2canvas
+			cr_createRuntime("c2canvas");
+		});
+		
+		// Pause and resume on page becoming visible/invisible
+		function onVisibilityChanged() {
+			if (document.hidden || document.mozHidden || document.webkitHidden || document.msHidden)
+				cr_setSuspended(true);
+			else
+				cr_setSuspended(false);
+		};
+		
+		document.addEventListener("visibilitychange", onVisibilityChanged, false);
+		document.addEventListener("mozvisibilitychange", onVisibilityChanged, false);
+		document.addEventListener("webkitvisibilitychange", onVisibilityChanged, false);
+		document.addEventListener("msvisibilitychange", onVisibilityChanged, false);
+		
+		function OnRegisterSWError(e)
+		{
+			console.warn("Failed to register service worker: ", e);
+		};
+		
+		// Runtime calls this global method when ready to start caching (i.e. after startup).
+		// This registers the service worker which caches resources for offline support.
+		window.C2_RegisterSW = function C2_RegisterSW()
+		{
+			if (!navigator.serviceWorker)
+				return;		// no SW support, ignore call
+			
+			try {
+				navigator.serviceWorker.register("sw.js", { scope: "./" })
+				.then(function (reg)
+				{
+					console.log("Registered service worker on " + reg.scope);
+				})
+				.catch(OnRegisterSWError);
+			}
+			catch (e)
+			{
+				OnRegisterSWError(e);
+			}
+		};
+    </script>
+</body> 
+</html> 
