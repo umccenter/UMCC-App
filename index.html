@@ -1,199 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Text Saver App</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            overflow: hidden;
-            color: #333;
-        }
-        .container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
-        .draggable {
-            position: absolute;
-            cursor: grab;
-        }
-        .output {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            text-align: center;
-            color: #333;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 5px;
-            font-family: 'Amiri', serif;
-        }
-        textarea {
-            width: 300px;
-            height: 100px;
-            padding: 10px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            direction: rtl;
-            font-family: 'Amiri', serif;
-            display: none;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #007BFF;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #bgUpload {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 10;
-        }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-    <script>
-        // Your Firebase configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            databaseURL: "YOUR_DATABASE_URL",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // Auto-fetch text every 5 seconds
-        setInterval(() => {
-            firebase.database().ref('savedText').once('value').then(snapshot => {
-                const text = snapshot.val() || "Your text will appear here...";
-                document.getElementById('displayText').textContent = text;
-            });
-        }, 5000);
-
-        window.onload = function() {
-            const displayText = document.getElementById('displayText');
-            const textInput = document.getElementById('textInput');
-            const saveButton = document.getElementById('saveButton');
-            const cancelButton = document.getElementById('cancelButton');
-            const editButton = document.getElementById('editButton');
-
-            firebase.database().ref('savedText').on('value', (snapshot) => {
-                const text = snapshot.val() || "Your text will appear here...";
-                displayText.textContent = text;
-                textInput.value = text;
-            });
-
-            makeDraggable();
-        };
-
-        function saveText() {
-            const textInput = document.getElementById('textInput');
-            const text = textInput.value.trim();
-
-            if (text) {
-                firebase.database().ref('savedText').set(text)
-                    .then(() => {
-                        alert('Text saved successfully!');
-                        toggleEdit(false);
-                    })
-                    .catch((error) => {
-                        alert('Error saving text: ' + error.message);
-                    });
-            } else {
-                alert('Please enter some text before saving!');
-            }
-        }
-
-        function toggleEdit(editMode) {
-            const textInput = document.getElementById('textInput');
-            const saveButton = document.getElementById('saveButton');
-            const cancelButton = document.getElementById('cancelButton');
-            const editButton = document.getElementById('editButton');
-
-            if (editMode) {
-                textInput.style.display = 'block';
-                saveButton.style.display = 'block';
-                cancelButton.style.display = 'block';
-                editButton.disabled = true;
-            } else {
-                textInput.style.display = 'none';
-                saveButton.style.display = 'none';
-                cancelButton.style.display = 'none';
-                editButton.disabled = false;
-            }
-        }
-
-        function cancelEdit() {
-            toggleEdit(false);
-        }
-
-        function uploadBackground(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.body.style.backgroundImage = `url(${e.target.result})`;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function makeDraggable() {
-            const elements = document.querySelectorAll('.draggable');
-            elements.forEach(el => {
-                el.addEventListener('mousedown', function(e) {
-                    const offsetX = e.clientX - el.getBoundingClientRect().left;
-                    const offsetY = e.clientY - el.getBoundingClientRect().top;
-
-                    function mouseMoveHandler(e) {
-                        el.style.left = `${e.clientX - offsetX}px`;
-                        el.style.top = `${e.clientY - offsetY}px`;
-                    }
-
-                    function mouseUpHandler() {
-                        document.removeEventListener('mousemove', mouseMoveHandler);
-                        document.removeEventListener('mouseup', mouseUpHandler);
-                    }
-
-                    document.addEventListener('mousemove', mouseMoveHandler);
-                    document.addEventListener('mouseup', mouseUpHandler);
-                });
-            });
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Enhanced Text Saver App (Modular Firebase)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      overflow: hidden;
+      color: #333;
+    }
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .draggable {
+      position: absolute;
+      cursor: grab;
+      z-index: 9999;
+    }
+    .output {
+      font-size: 1.5rem;
+      text-align: center;
+      color: #333;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 5px;
+      font-family: 'Amiri', serif;
+    }
+    textarea {
+      width: 300px;
+      height: 100px;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      direction: rtl;
+      font-family: 'Amiri', serif;
+      display: none;
+      z-index: 9999;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, opacity 0.3s;
+      z-index: 9999;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #editButton {
+      opacity: 0.5;
+    }
+    #editButton:hover {
+      opacity: 1;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri&display=swap" rel="stylesheet"/>
 </head>
 <body>
-    <input id="bgUpload" type="file" accept="image/*" onchange="uploadBackground(event)" />
-    <div class="container">
-        <div id="displayText" class="output draggable" style="top: 50px; left: 50px;">Your text will appear here...</div>
-        <textarea id="textInput" class="draggable" style="top: 200px; left: 50px;">Type your text here...</textarea>
-        <button id="editButton" onclick="toggleEdit(true)" class="draggable" style="top: 350px; left: 50px;">Edit</button>
-        <button id="saveButton" onclick="saveText()" class="draggable" style="top: 400px; left: 50px; display: none;">Save</button>
-        <button id="cancelButton" onclick="cancelEdit()" class="draggable" style="top: 450px; left: 50px; display: none;">Cancel</button>
-    </div>
+  <div class="container">
+    <div id="displayText" class="output draggable" style="top: 50px; left: 50px;">Your text will appear here...</div>
+    <textarea id="textInput" class="draggable" style="top: 200px; left: 50px;">Type your text here...</textarea>
+    <button id="editButton" class="draggable" style="top: 350px; left: 50px;">Edit</button>
+    <button id="saveButton" class="draggable" style="top: 400px; left: 50px; display: none;">Save</button>
+    <button id="cancelButton" class="draggable" style="top: 450px; left: 50px; display: none;">Cancel</button>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js';
+    import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.17.2/firebase-analytics.js';
+    import { getDatabase, ref, set, get } from 'https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js';
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQA4m35hcdreM4VpooyagxQAfYynXFClo",
+      authDomain: "hadeeth-26b88.firebaseapp.com",
+      databaseURL: "https://hadeeth-26b88-default-rtdb.firebaseio.com",
+      projectId: "hadeeth-26b88",
+      storageBucket: "hadeeth-26b88.firebasestorage.app",
+      messagingSenderId: "114896646614",
+      appId: "1:114896646614:web:340ec731675b4121a5b477",
+      measurementId: "G-4MH2VPKD5D"
+    };
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+    function makeDraggable() {
+      const elements = document.querySelectorAll('.draggable');
+      elements.forEach(el => {
+        el.addEventListener('mousedown', function(e) {
+          const offsetX = e.clientX - el.getBoundingClientRect().left;
+          const offsetY = e.clientY - el.getBoundingClientRect().top;
+          function mouseMoveHandler(e) {
+            el.style.left = `${e.clientX - offsetX}px`;
+            el.style.top = `${e.clientY - offsetY}px`;
+          }
+          function mouseUpHandler() {
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup', mouseUpHandler);
+          }
+          document.addEventListener('mousemove', mouseMoveHandler);
+          document.addEventListener('mouseup', mouseUpHandler);
+        });
+      });
+    }
+    function toggleEdit(e) {
+      const textInput = document.getElementById('textInput');
+      const saveButton = document.getElementById('saveButton');
+      const cancelButton = document.getElementById('cancelButton');
+      const editButton = document.getElementById('editButton');
+      if (e) {
+        editButton.style.display = 'none';
+        textInput.style.display = 'block';
+        saveButton.style.display = 'block';
+        cancelButton.style.display = 'block';
+      } else {
+        textInput.style.display = 'none';
+        saveButton.style.display = 'none';
+        cancelButton.style.display = 'none';
+        editButton.style.display = 'block';
+      }
+    }
+    window.toggleEdit = toggleEdit;
+    async function saveText() {
+      const textInput = document.getElementById('textInput');
+      const displayText = document.getElementById('displayText');
+      const text = textInput.value.trim();
+      if (!text) {
+        alert('Please enter some text before saving!');
+        return;
+      }
+      try {
+        await set(ref(database, 'Hadeeth'), text);
+        alert('Text saved successfully!');
+        const snapshot = await get(ref(database, 'Hadeeth'));
+        displayText.textContent = snapshot.val();
+        toggleEdit(false);
+      } catch (error) {
+        alert('Error saving text: ' + error.message);
+      }
+    }
+    window.saveText = saveText;
+    async function cancelEdit() {
+      const displayText = document.getElementById('displayText');
+      const textInput = document.getElementById('textInput');
+      const snapshot = await get(ref(database, 'Hadeeth'));
+      const text = snapshot.val() || 'Your text will appear here...';
+      displayText.textContent = text;
+      textInput.value = text;
+      toggleEdit(false);
+    }
+    window.cancelEdit = cancelEdit;
+    window.addEventListener('DOMContentLoaded', async () => {
+      const displayText = document.getElementById('displayText');
+      const textInput = document.getElementById('textInput');
+      const snapshot = await get(ref(database, 'Hadeeth'));
+      const text = snapshot.val() || 'Your text will appear here...';
+      displayText.textContent = text;
+      textInput.value = text;
+      makeDraggable();
+      document.getElementById('editButton').addEventListener('click', () => toggleEdit(true));
+      document.getElementById('saveButton').addEventListener('click', saveText);
+      document.getElementById('cancelButton').addEventListener('click', cancelEdit);
+    });
+  </script>
 </body>
 </html>
